@@ -40,6 +40,9 @@ class SnakeGameAI:
         self.snake = [self.head,
                       Point(self.head.x - BLOCK_SIZE, self.head.y),
                       Point(self.head.x - (2 * BLOCK_SIZE), self.head.y)]
+        initial_size = 4  # Example: Start with a snake that has 5 blocks
+        for i in range(1, initial_size):
+            self.snake.append(Point(self.head.x - (i * BLOCK_SIZE), self.head.y))
 
         self.score = 0
         self.food = None

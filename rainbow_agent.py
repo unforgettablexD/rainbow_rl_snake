@@ -147,4 +147,5 @@ class RainbowAgent:
         Args:
             file_path (str): The path to the file where the model state will be saved.
         """
+        file_path = "./saved_models/"
         torch.save(self.dqn.state_dict(), file_path)
