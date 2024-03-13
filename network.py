@@ -79,7 +79,10 @@ class Network(nn.Module):
         )
 
     def forward(self, x):
+        #print(f'Input shape (at forward start): {x.shape}')  # Expecting (1, 12) if one state vector is passed
         x = self.feature_layer(x)
+        #print(f'Shape after feature_layer: {x.shape}')
+        #x = self.feature_layer(x)
         value = self.value_layer(x).view(-1, 1, self.atom_size)
         advantage = self.advantage_layer(x).view(-1, self.out_dim, self.atom_size)
 

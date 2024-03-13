@@ -30,19 +30,27 @@ class RainbowAgent:
 
         self.memory = PrioritizedReplayBuffer(memory_size, alpha)  # Ensure alpha is used correctly in your memory
 
-        self.dqn = Network(state_dim, action_dim, atom_size, torch.linspace(v_min, v_max, atom_size)).to(self.device)
-        self.dqn_target = Network(state_dim, action_dim, atom_size, torch.linspace(v_min, v_max, atom_size)).to(self.device)
-        self.dqn_target.load_state_dict(self.dqn.state_dict())
+        self.dqn = Network(in_dim=12, out_dim=action_dim, atom_size=51,
+                           support=torch.linspace(v_min, v_max, atom_size)).to(self.device)
+        self.dqn_target = Network(in_dim=12, out_dim=action_dim, atom_size=51,
+                                  support=torch.linspace(v_min, v_max, atom_size)).to(self.device)
+
+        # self.dqn_target = Network(state_dim, action_dim, atom_size, torch.linspace(v_min, v_max, atom_size)).to(self.device)
+        # self.dqn_target.load_state_dict(self.dqn.state_dict())
         self.optimizer = optim.Adam(self.dqn.parameters(), lr=lr)
 
-
     def choose_action(self, state):
-        if state is None:
-            raise ValueError("Received None state in choose_action. State must not be None.")
-        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        # Assuming 'state' is a numpy array or a list with shape (12,)
+        #print("State shape (before unsqueeze):", state.shape)  # This should print (12,)
+
+        # Convert state to a tensor, ensuring it's on the correct device
+        state_tensor = torch.FloatTensor(state).to(self.device).unsqueeze(0)  # Note the order of operations
+        #print("State tensor shape (before forward pass):", state_tensor.size())  # This should print torch.Size([1, 12])
+
         with torch.no_grad():
             action_values = self.dqn(state_tensor)
             action = action_values.argmax(1).item()
+
         return action
 
     def store_transition(self, state, action, reward, next_state, done):
@@ -123,18 +131,25 @@ class RainbowAgent:
     def update_target_network(self):
         self.dqn_target.load_state_dict(self.dqn.state_dict())
 
-    def choose_action(self, state):
-        if state is None:
-            raise ValueError("Received None state in choose_action method.")
+    def choose_action(self, state_tensor):
+        """
+        Chooses an action based on the current state_tensor using the DQN model.
 
-        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-        self.dqn.eval()  # Set the network to evaluation mode
+        Args:
+            state_tensor (torch.Tensor): The current state as a PyTorch tensor.
+
+        Returns:
+            int: The action chosen by the model.
+        """
+        # Ensure state_tensor is already a tensor on the correct device and with the correct shape
+       # print("State tensor shape (before forward pass):", state_tensor.size())  # Should print torch.Size([1, state_dim])
+
         with torch.no_grad():
-            # Convert state to tensor, add batch dimension, send to device, etc.
-            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-            # Use the network to choose the action with the highest Q-value
-            action = self.dqn(state_tensor).argmax(1).item()  # Assuming discrete action space
-        self.dqn.train()  # Set back to training mode
+            self.dqn.eval()  # Ensure the network is in evaluation mode
+            action_values = self.dqn(state_tensor)
+            action = action_values.argmax(1).item()  # Assuming a discrete action space
+            self.dqn.train()  # Switch back to training mode
+
         return action
 
     def reset(self):
