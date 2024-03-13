@@ -17,13 +17,15 @@ GREEN = (0, 255, 0)
 BLUE = (50, 153, 213)
 BLACK = (0, 0, 0)
 
-BLOCK_SIZE = 20
-SPEED = 10
+BLOCK_SIZE = 10  # Decrease block size
+w = 1280  # Increase width
+h = 960  # Increase height
+SPEED = 100
 
 
 class SnakeGameAI:
 
-    def __init__(self, w=640, h=480):
+    def __init__(self, w=1280, h=960):
         self.w = w
         self.h = h
         self.display = pygame.display.set_mode((self.w, self.h))

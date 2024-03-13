@@ -70,7 +70,7 @@ action_dim = 3  # For SnakeGameAI: [Turn Left, Go Straight, Turn Right]
 
 # Agent configuration
 agent_config = {
-    "state_dim": state_dim,
+    "state_dim": 12,
     "action_dim": action_dim,
     "memory_size": 10000,
     "batch_size": 64,
@@ -91,7 +91,7 @@ game = SnakeGameAI(w=game_config["w"], h=game_config["h"])
 agent = RainbowAgent(**agent_config)
 
 # Training loop
-num_episodes = 1000
+num_episodes = 10000
 
 for episode in range(num_episodes):
     state = game.reset()
@@ -114,6 +114,7 @@ for episode in range(num_episodes):
         action = agent.choose_action(state_tensor)
 
         reward, done, score = game.play_step(action)
+        reward = adjust_reward(game, done)
         next_state = get_state(game)
         agent.store_transition(state, action, reward, next_state, done)
         agent.learn()
@@ -122,11 +123,8 @@ for episode in range(num_episodes):
         if next_state is None:
             raise ValueError("Game didn't return a next state.")
 
-        agent.store_transition(state, action, reward, next_state, done)
-        agent.learn()
 
         state = next_state
-        total_reward += reward
 
         # Handle Pygame events
         for event in pygame.event.get():
